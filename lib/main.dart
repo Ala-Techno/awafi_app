@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'core/di/dependency_injection.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // تهيئة حقن التبعيات
+  await setupGetIt();
   runApp(const MyApp());
 }
 
