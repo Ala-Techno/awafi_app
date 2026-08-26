@@ -1,13 +1,27 @@
+import 'package:awafi_app/core/localization/l10n/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/theme/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 void main() async {
+  // 1. تأكيد تهيئة محرك فلاتر قبل أي خدمة
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // تهيئة حقن التبعيات
+
+  // 2. تفعيل مكتبة الترجمة
+  await EasyLocalization.ensureInitialized();
+
+  // 3. تشغيل حقن التبعيات (GetIt & SharedPreferences & Dio)
   await setupGetIt();
-  runApp(const MyApp());
+ runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('ar'),
+      startLocale: const Locale('ar'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -18,7 +32,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Awafi Store',
       debugShowCheckedModeBanner: false,
+
+      // ── إعدادات الترجمة واللغات ──────────────────────────────────────────────
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+
+  // ── الثيم الموحد للخط والألوان ──────────────────────────────────────────
       theme: AppTheme.lightTheme,
+
       home: const _PlaceholderScreen(),
     );
   }
@@ -33,7 +55,7 @@ class _PlaceholderScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Awafi Store')),
+    appBar: AppBar(title: Text(AppStrings.welcome)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

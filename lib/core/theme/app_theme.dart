@@ -11,6 +11,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Cairo',
 
       // ── Color Scheme ──────────────────────────────────────────────────────
       colorScheme: ColorScheme.light(
