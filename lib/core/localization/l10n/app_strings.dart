@@ -17,5 +17,5 @@ abstract class AppStrings {
   static String get unknownError => 'unknown_error'.tr();
 
   // ── Welcom Screen ─────────────────────────────────────────────────────────
-  static String get welcom => 'welcom'.tr();
+  static String get welcome => 'welcome'.tr();
 }

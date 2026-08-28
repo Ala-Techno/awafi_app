@@ -66,11 +66,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-assets:
-  - assets/images/
-  - assets/fonts/
-  - assets/svgs/
-  - assets/translations/
+  assets:
+    - assets/images/
+    - assets/fonts/
+    - assets/svgs/
+    - assets/translations/
 
 fonts:
   - family: Cairo
