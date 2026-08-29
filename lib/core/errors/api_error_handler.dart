@@ -1,40 +1,87 @@
 import 'package:dio/dio.dart';
+import 'package:awafi_app/core/errors/failures.dart';
+import 'exceptions.dart';
 
 class ApiErrorHandler {
-  static String handle(dynamic error) {
-    if (error is DioException) {
+  static Failure handle(dynamic error) {
+
+ // ==========================================
+    // 0. الاستثناءات الخاصة (Custom Exceptions) المرمية يدوياً من الـ DataSource
+    // ==========================================
+    if (error is ServerException) {
+      // استخدام ?? لإعطاء نص احتياطي في حال كانت message فارغة أو null
+      return ServerFailure(error.message ?? "حدث خطأ في السيرفر");
+    } 
+    else if (error is CacheException) {
+      return CacheFailure(error.message ?? "حدث خطأ في الذاكرة المؤقتة");
+    }
+
+    // ==========================================
+    // 1. النوع الأول: أخطاء من عند المستخدم (الشبكة والتغطية والجهاز)
+    // ==========================================
+    else if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.sendTimeout:
         case DioExceptionType.receiveTimeout:
-          return "انتهت مهلة الاتصال، يرجى المحاولة لاحقاً";
-        case DioExceptionType.badResponse:
-          return _handleStatusError(error.response?.statusCode);
-        case DioExceptionType.cancel:
-          return "تم إلغاء الطلب";
+          return const ServerFailure("انتهت مهلة الاتصال، يرجى المحاولة لاحقاً");
+
         case DioExceptionType.connectionError:
-          return "لا يوجد اتصال بالإنترنت، تحقق من شبكتك";
+          return const NetworkFailure("لا يوجد اتصال بالإنترنت، تحقق من شبكتك");
+
+        case DioExceptionType.cancel:
+          return const ServerFailure("تم إلغاء الطلب");
+
+        // ==========================================
+        // 2. النوع الثاني: أخطاء راجعة من السيرفر
+        // ==========================================
+        case DioExceptionType.badResponse:
+          return ServerFailure(
+            _parseServerError(error.response),
+            statusCode: error.response?.statusCode,
+          );
+
         default:
-          return "حدث خطأ غير متوقع، حاول مجدداً";
+          return const ServerFailure("حدث خطأ في الشبكة، حاول مجدداً");
       }
+    } 
+    // ==========================================
+    // 3. النوع الثالث: أخطاء من داخل كود التطبيق نفسه
+    // ==========================================
+    else if (error is FormatException) {
+      return const ServerFailure("خطأ في معالجة وتحويل البيانات القادمة من السيرفر");
+    } else if (error is TypeError) {
+      return const ServerFailure("حدث خطأ في عدم تطابق أنواع البيانات الداخلية");
     } else {
-      return "حدث خطأ في النظام";
+      return ServerFailure("حدث خطأ غير متوقع في النظام: ${error.toString()}");
     }
   }
 
+  /// دالة قراءة رسالة السيرفر الديناميكية أو الاستعانة بالأرقام الاحتياطية
+  static String _parseServerError(Response? response) {
+    if (response?.data != null && response?.data is Map) {
+      final serverMessage = response?.data['message'] ?? response?.data['error'];
+      if (serverMessage != null && serverMessage.toString().isNotEmpty) {
+        return serverMessage.toString();
+      }
+    }
+    return _handleStatusError(response?.statusCode);
+  }
+
+  /// الأرقام الاحتياطية لأخطاء السيرفر
   static String _handleStatusError(int? statusCode) {
     switch (statusCode) {
       case 400:
-        return "طلب غير صالحة";
+        return "بيانات الطلب غير صالحة";
       case 401:
       case 403:
         return "غير مصرح لك بالوصول، يرجى تسجيل الدخول";
       case 404:
         return "الصفحة أو العنصر غير موجود";
       case 500:
-        return "خطأ في السيرفر الداخلي";
+        return "خطأ في السيرفر الداخلي، يرجى المحاولة لاحقاً";
       default:
-        return "حدث خطأ في الاستجابة من السيرفر";
+        return "حدث خطأ غير متوقع في الاستجابة من السيرفر";
     }
   }
 }

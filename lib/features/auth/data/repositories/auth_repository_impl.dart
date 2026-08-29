@@ -1,4 +1,6 @@
+import 'package:awafi_app/core/errors/api_error_handler.dart';
 import 'package:awafi_app/core/errors/api_result.dart';
+import 'package:awafi_app/core/errors/failures.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
@@ -28,10 +30,11 @@ class AuthRepositoryImpl implements AuthRepository {
       return Success(userModel);
 
     } catch (error) {
-      // 4. عند الفشل: الحماية وإمساك الخطأ وتغليفه في ApiResult.failure
-      return Failure(
-        'حدث خطأ أثناء الاتصال: ${error.toString()}',
-      );
-    }
+    // 1. ترجمة الخطأ إلى Failure (ServerFailure/NetworkFailure)
+    final Failure failureObj = ApiErrorHandler.handle(error);
+
+    // 🔴 إرجاع فشل متوافق ومغلف داخل ApiFailure
+    return ApiFailure(failureObj);
+  }
   }
 }
