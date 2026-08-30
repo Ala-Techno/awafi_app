@@ -1,3 +1,7 @@
+import 'package:awafi_app/features/home/data/datasources/home_api_service.dart';
+import 'package:awafi_app/features/home/data/repositories/home_repository_impl.dart';
+import 'package:awafi_app/features/home/domain/repositories/home_repository.dart';
+import 'package:awafi_app/features/home/presentation/providers/home_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,5 +45,22 @@ Future<void> setupGetIt() async {
   // نستخدم registerFactory حتى يُنشئ حالة جديدة عند الحاجة، ويستجلب عقد الـ Repository تلقائياً
   getIt.registerFactory<AuthProvider>(
     () => AuthProvider(authRepository: getIt<AuthRepository>()),
+  );
+
+  // ==================== Home Feature DI ====================
+
+// 1. Data Source
+  getIt.registerLazySingleton<HomeRemoteDataSource>(
+  () => HomeRemoteDataSourceImpl(getIt<Dio>()),
+  );
+
+// 2. Repository
+  getIt.registerLazySingleton<HomeRepository>(
+  () => HomeRepositoryImpl(getIt<HomeRemoteDataSource>()),
+  );
+
+// 3. Provider (نستخدم registerFactory لإنشاء نسخة جديدة مع كل فتح للشاشة)
+  getIt.registerFactory<HomeProvider>(
+  () => HomeProvider(homeRepository: getIt<HomeRepository>()),
   );
 }

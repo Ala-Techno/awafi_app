@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     // د) اتخاذ قرار الشاشة بناءً على النتيجة الراجعة من الكنترولر
     if (isSuccess) {
       // حالة النجاح: الانتقال للشاشة الرئيسية وتدمير شاشة الدخول من مكدس الشاشات
-Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
+    Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
       // حالة الفشل: عرض شريط تنبيه بصري (SnackBar) يحوي نص الخطأ القادم من الكنترولر
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
