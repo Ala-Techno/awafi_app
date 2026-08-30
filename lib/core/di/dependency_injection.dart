@@ -28,13 +28,13 @@ Future<void> setupGetIt() async {
   // أ) تسجيل ساعي البريد (DataSource)
   // يطلب Dio من GetIt تلقائياً عبر getIt<Dio>()
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(dio: getIt<Dio>()),
+    () => AuthRemoteDataSourceImpl(dio: DioFactory.getDio() ),
   );
 
   // ب) تسجيل المدير التنفيذي (RepositoryImpl) بالربط مع العقد (AuthRepository)
   // يطلب DataSource من GetIt تلقائياً
   getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(remoteDataSource: getIt<AuthRemoteDataSource>()),
+    () => AuthRepositoryImpl(remoteDataSource: getIt<AuthRemoteDataSource>() , localDataSource: getIt<SharedPrefService>()),
   );
 
   // ج) تسجيل الكنترولر (AuthProvider)

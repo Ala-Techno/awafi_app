@@ -73,9 +73,9 @@ class AuthProvider extends ChangeNotifier {
       _user = result.data;
       _errorMessage = null;
       isSuccess = true;
-    } else if (result is Failure<UserEntity>) {
+    } else if (result is ApiFailure<UserEntity>) {
       // في حال الفشل: نستخرج نص الخطأ ونخزنه في حالة الكنترولر
-      _errorMessage = result.message;
+      _errorMessage = result.failure.message;
       _user = null;
       isSuccess = false;
     }

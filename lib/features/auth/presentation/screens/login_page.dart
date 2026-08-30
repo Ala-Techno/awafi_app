@@ -1,4 +1,6 @@
 import 'package:awafi_app/app/routing/routes.dart';
+import 'package:awafi_app/core/localization/l10n/app_strings.dart';
+import 'package:awafi_app/core/network/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -50,12 +52,12 @@ class _LoginPageState extends State<LoginPage> {
   // -------------------------------------------------------------
   // 3. User Action Handler (دالة معالجة ضغط زر الدخول)
   // -------------------------------------------------------------
-  Future<void> _handleLogin(AuthProvider authProvider) async {
+  Future<void> _handleLogin( ) async {
     // أ) التأكد من صحة كتابة الإيميل والباسورد في الحقول
     if (!_formKey.currentState!.validate()) return;
 
     // ب) استدعاء دالة الكنترولر وتمرير البيانات الصافية وانتظار نتيجة الـ bool
-    final bool isSuccess = await authProvider.login(
+    final bool isSuccess = await context.read<AuthProvider>().login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
@@ -70,7 +72,7 @@ Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
       // حالة الفشل: عرض شريط تنبيه بصري (SnackBar) يحوي نص الخطأ القادم من الكنترولر
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'حدث خطأ في تسجيل الدخول'),
+          content: Text(context.read<AuthProvider>().errorMessage ?? 'حدث خطأ في تسجيل الدخول'),
           backgroundColor: Colors.red,
         ),
       );
@@ -82,13 +84,14 @@ Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
   // -------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    // نأخذ نسخة من الكنترولر بدون استماع (listen: false) 
-  // لأننا نقتصر على استدعاء دالة _handleLogin فقط
-  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //   // نأخذ نسخة من الكنترولر بدون استماع (listen: false) 
+  // // لأننا نقتصر على استدعاء دالة _handleLogin فقط
+  // final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تسجيل الدخول'),
+        automaticallyImplyLeading: false,
+        title:  Text(AppStrings.login),
         centerTitle: true,
       ),
       body: Padding(
@@ -140,7 +143,8 @@ Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
                 Consumer<AuthProvider>(
             builder: (context, provider, child) {
               return ElevatedButton(
-                onPressed: provider.isLoading ? null : () => _handleLogin(authProvider),
+
+               onPressed: provider.isLoading ? null : _handleLogin,
                 child: provider.isLoading
                     ? const CircularProgressIndicator()
                     : const Text('تسجيل الدخول'),

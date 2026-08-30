@@ -1,3 +1,4 @@
+import 'package:awafi_app/core/network/api_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -15,6 +16,7 @@ class DioFactory {
       _dio = Dio();
       
       _dio!
+        ..options.baseUrl = ApiConstants.apiBaseUrl // 2. إضافة العنوان الرئيسي هنا
         ..options.connectTimeout = timeOut
         ..options.receiveTimeout = timeOut
         ..options.headers = {

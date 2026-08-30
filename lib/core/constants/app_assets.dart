@@ -5,7 +5,7 @@ abstract class AppAssets {
 
   // ── Base Paths ──────────────────────────────────────────────────────────
   static const String _imagesPath = 'assets/images';
-  static const String _svgsPath = 'assets/svgs'; // في حال استخدمنا SVG لاحقاً
+  // static const String _svgsPath = 'assets/svgs'; // في حال استخدمنا SVG لاحقاً
 
   // ── Images ──────────────────────────────────────────────────────────────
   static const String appLogo = '$_imagesPath/app_logo.png';

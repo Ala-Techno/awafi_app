@@ -7,7 +7,9 @@ import 'routing/routes.dart';
 
 class AwafiApp extends StatelessWidget {
   final AppRouter appRouter;
-  const AwafiApp({super.key, required this.appRouter});
+  final String initialRoute;
+
+  const AwafiApp({super.key, required this.appRouter, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class AwafiApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
 
       // التوجيه
-      initialRoute: Routes.loginScreen,
+      initialRoute: initialRoute,
       onGenerateRoute: appRouter.generateRoute,
     );
   }
