@@ -6,6 +6,7 @@ class ProductModel extends ProductEntity {
     required super.title,
     required super.price,
     required super.image,
+    required super.description,
   });
 
   // دالة التحويل من JSON إلى Object
@@ -15,6 +16,7 @@ class ProductModel extends ProductEntity {
       title: json['title'] ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       image: json['image'] ?? '',
+      description: json['description'] ?? '',
     );
   }
 

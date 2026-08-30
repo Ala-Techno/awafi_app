@@ -109,7 +109,15 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: provider.products.length,
               itemBuilder: (context, index) {
                 final product = provider.products[index];
-                return Card(
+                return InkWell(
+                  onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.productDetailsScreen,
+                        arguments: product,
+                      );
+                  },child: 
+                 Card(
                   elevation: 3,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -155,12 +163,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
+                )
+                
                 );
               },
             ),
           );
         },
+        
       ),
-    );
+      // أضف هذا داخل الـ Scaffold في product_details_screen.dart
+
+    
+   );
   }
 }

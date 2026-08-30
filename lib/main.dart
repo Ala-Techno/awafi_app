@@ -19,10 +19,10 @@ void main() async {
 
   // 4. قراءة التوكن المحفوظ من الذاكرة المحلية (بعد جاهزية setupGetIt)
   final sharedPref = getIt<SharedPrefService>();
-  final String? token = sharedPref.getString(ApiConstants.userTokenKey);
+  final String token = sharedPref.getString(ApiConstants.userTokenKey);
 
   // 5. تحديد المسار الأولي: إذا كان التوكن موجوداً وغير فارغ يذهب للرئيسية مباشرة
-  final String initialRoute = (token != null && token.isNotEmpty)
+  final String initialRoute = token.isNotEmpty
       ? Routes.homeScreen
       : Routes.loginScreen; 
  runApp(

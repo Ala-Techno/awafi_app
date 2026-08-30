@@ -1,6 +1,5 @@
 import 'package:awafi_app/app/routing/routes.dart';
 import 'package:awafi_app/core/localization/l10n/app_strings.dart';
-import 'package:awafi_app/core/network/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';

@@ -1,5 +1,7 @@
 import 'package:awafi_app/features/auth/presentation/screens/login_page.dart';
+import 'package:awafi_app/features/home/domain/entities/product_entity.dart';
 import 'package:awafi_app/features/home/presentation/screens/home_screen.dart';
+import 'package:awafi_app/features/home/presentation/screens/product_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'routes.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +29,12 @@ class AppRouter {
             create: (_) => getIt<HomeProvider>(),
             child: const HomeScreen(),
           ),
+        );
+
+      case Routes.productDetailsScreen:
+        final product = settings.arguments as ProductEntity;
+        return MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(product: product),
         );
 
       default:
