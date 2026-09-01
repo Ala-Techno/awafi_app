@@ -7,6 +7,8 @@ class ProductModel extends ProductEntity {
     required super.price,
     required super.image,
     required super.description,
+    required super.category,
+    required super.rating,
   });
 
   // دالة التحويل من JSON إلى Object
@@ -17,7 +19,10 @@ class ProductModel extends ProductEntity {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       image: json['image'] ?? '',
       description: json['description'] ?? '',
-    );
+      category: json['category'] ?? '',
+      rating: json['rating'] != null 
+      ? Map<String, dynamic>.from(json['rating']) 
+      : {},);
   }
 
   // دالة التحويل من Object إلى JSON (إذا احتجنا إرساله)
@@ -27,6 +32,21 @@ class ProductModel extends ProductEntity {
       'title': title,
       'price': price,
       'image': image,
-    };
+      'description': description,
+      'category': category,
+      'rating': rating,
+    };  
   }
+
+  factory ProductModel.fromEntity(ProductEntity entity) {
+  return ProductModel(
+    id: entity.id,
+    title: entity.title,
+    price: entity.price,
+    description: entity.description,
+    category: entity.category,
+    image: entity.image,
+    rating: entity.rating,
+  );
+}
 }

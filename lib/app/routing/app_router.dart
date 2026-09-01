@@ -1,4 +1,6 @@
 import 'package:awafi_app/features/auth/presentation/screens/login_page.dart';
+import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
+import 'package:awafi_app/features/cart/presentation/screens/cart_screen.dart';
 import 'package:awafi_app/features/home/domain/entities/product_entity.dart';
 import 'package:awafi_app/features/home/presentation/screens/home_screen.dart';
 import 'package:awafi_app/features/home/presentation/screens/product_details_screen.dart';
@@ -31,12 +33,59 @@ class AppRouter {
           ),
         );
 
-      case Routes.productDetailsScreen:
-        final product = settings.arguments as ProductEntity;
-        return MaterialPageRoute(
-          builder: (_) => ProductDetailsScreen(product: product),
-        );
 
+
+
+
+                        // الاساسي
+        // ------------------------------
+        // -------------------------------
+
+     // 3. مسار تفاصيل المنتج (Product Details)
+    //  case Routes.productDetailsScreen:
+    //   final product = settings.arguments as ProductEntity;
+    //   return MaterialPageRoute(
+    //     builder: (_) => ChangeNotifierProvider(
+    //       create: (_) => getIt<CartController>(),
+    //       child: ProductDetailsScreen(product: product),
+    //       ),
+    //     );
+        
+    //  case Routes.cartScreen:
+    //    final userId = settings.arguments as int? ?? 1; // إمكانية تمرير userId أو إعطاء قيمة افتراضية
+    //     return MaterialPageRoute(
+    //       builder: (_) => ChangeNotifierProvider(
+    //         create: (_) => getIt<CartController>(),
+    //         child: CartScreen(userId: userId),
+    //       ),
+    //     );
+
+
+                  // بيانات مؤقتة تخزين محلي
+        // ------------------------------
+        // -------------------------------
+
+
+    // 3. مسار تفاصيل المنتج (Product Details)
+case Routes.productDetailsScreen:
+  final product = settings.arguments as ProductEntity;
+  return MaterialPageRoute(
+    builder: (_) => ProductDetailsScreen(product: product), // 👈 ارجع الشاشة مباشرة بدون Provider
+  );
+
+// 4. مسار السلة (Cart)
+case Routes.cartScreen:
+  final userId = settings.arguments as int? ?? 1;
+  return MaterialPageRoute(
+    builder: (_) => CartScreen(userId: userId), // 👈 ارجع الشاشة مباشرة بدون Provider
+  );
+
+  
+  
+        // ------------------------------
+        // -------------------------------
+
+  
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

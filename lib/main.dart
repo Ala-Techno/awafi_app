@@ -22,9 +22,11 @@ void main() async {
   final String token = sharedPref.getString(ApiConstants.userTokenKey);
 
   // 5. تحديد المسار الأولي: إذا كان التوكن موجوداً وغير فارغ يذهب للرئيسية مباشرة
-  final String initialRoute = token.isNotEmpty
-      ? Routes.homeScreen
-      : Routes.loginScreen; 
+  // final String initialRoute = token.isNotEmpty
+  //     ? Routes.homeScreen
+  //     : Routes.loginScreen; 
+
+      const String initialRoute = Routes.homeScreen;
  runApp(
     EasyLocalization(
       supportedLocales: const [Locale('ar'), Locale('en')],

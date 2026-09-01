@@ -1,3 +1,7 @@
+import 'package:awafi_app/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:awafi_app/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:awafi_app/features/cart/domain/repositories/cart_repository.dart';
+import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
 import 'package:awafi_app/features/home/data/datasources/home_api_service.dart';
 import 'package:awafi_app/features/home/data/repositories/home_repository_impl.dart';
 import 'package:awafi_app/features/home/domain/repositories/home_repository.dart';
@@ -63,4 +67,26 @@ Future<void> setupGetIt() async {
   getIt.registerFactory<HomeProvider>(
   () => HomeProvider(homeRepository: getIt<HomeRepository>()),
   );
+
+// ---------------------- CART FEATURE ---------------------- //
+  
+ 
+ 
+
+  // 1. Remote Data Source (LazySingleton)
+  getIt.registerLazySingleton<CartRemoteDataSource>(
+    () => CartRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
+
+   // 2. Repository (LazySingleton)
+  getIt.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(remoteDataSource: getIt<CartRemoteDataSource>()),
+  );
+
+   // 3. Controller (Factory لإنشاء نسخة جديدة مع كل فتح للشاشة)
+  getIt.registerFactory<CartController>(
+    () => CartController(cartRepository: getIt<CartRepository>()),
+  );
+
+
 }

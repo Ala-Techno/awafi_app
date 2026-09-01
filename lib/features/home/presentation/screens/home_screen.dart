@@ -36,24 +36,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('المنتجات'),
-        centerTitle: true,
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.exit_to_app, color: Colors.black),
-            onPressed: () {
-            Navigator.pushNamedAndRemoveUntil(
-        context,
-        Routes.loginScreen,
-        (route) => false,
-      );
-      
-          },
-          ),
-        ],
-      ),
+   appBar: AppBar(
+  title: const Text('المتجر'),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.shopping_cart_outlined),
+      onPressed: () {
+        // الانتقال إلى شاشة السلة
+        Navigator.pushNamed(
+          context,
+          Routes.cartScreen,
+          arguments: 1, // تمرير userId (افتراضياً 1)
+        );
+      },
+    ),
+  ],
+),
       body: Consumer<HomeProvider>(
         builder: (context, provider, child) {
           // أ) حالة التحميل (Loading State)

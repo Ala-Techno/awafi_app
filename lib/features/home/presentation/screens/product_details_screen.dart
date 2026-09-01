@@ -1,4 +1,6 @@
+import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../domain/entities/product_entity.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
@@ -88,38 +90,77 @@ class ProductDetailsScreen extends StatelessWidget {
           ],
         ),
       ),
-        bottomNavigationBar: Container(
-       padding: const EdgeInsets.all(16.0),
-         decoration: BoxDecoration(
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
           color: Colors.white,
-           boxShadow: [
-           BoxShadow(
-         color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 10,
-          offset: const Offset(0, -5),
-           ),
-           ],
-             ),
-                child: ElevatedButton.icon(
-                onPressed: () {
-      // سنربط منطق الإضافة للسلة في ميزة السلة القادمة
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تمت إضافة ${product.title} إلى السلة')),
-      );
-    },
-    style: ElevatedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Consumer<CartController>(
+          builder: (context, cartController, child) {
+            return ElevatedButton(
+              onPressed: cartController.isLoading
+                  ? null
+                  : ()async {
+                      final isSuccess = await cartController.addToCart(
+                        userId: 1, 
+                        product: product, 
+                        quantity: 1, 
+                      );
+                      if (!context.mounted) return;
+
+                      if (isSuccess) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('تمت إضافة المنتج إلى السلة بنجاح'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else if (cartController.errorMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(cartController.errorMessage!),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: cartController.isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.shopping_cart_outlined),
+                        SizedBox(width: 8),
+                        Text(
+                          'إضافة إلى السلة',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+            );
+          },
+        ),
       ),
-    ),
-      icon: const Icon(Icons.shopping_cart_outlined),
-         label: const Text(
-      'إضافة إلى السلة',
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-       ),
-      ),
-    ),
     );
   }
 }
