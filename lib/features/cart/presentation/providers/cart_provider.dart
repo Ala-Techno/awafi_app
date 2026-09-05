@@ -267,7 +267,7 @@ void updateQuantityLocal({required int cartItemId, required int newQuantity}) {
 
     bool isSuccess = false;
 
-    if (result is Success<void>) {
+    if (result is Success<List<CartItemEntity>>) {
       _cartItems.clear();
       _errorMessage = null;
       isSuccess = true;

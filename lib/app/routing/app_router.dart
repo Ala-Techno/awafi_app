@@ -1,21 +1,43 @@
-import 'package:awafi_app/features/auth/presentation/screens/login_page.dart';
-import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
-import 'package:awafi_app/features/cart/presentation/screens/cart_screen.dart';
-import 'package:awafi_app/features/home/domain/entities/product_entity.dart';
-import 'package:awafi_app/features/home/presentation/screens/home_screen.dart';
-import 'package:awafi_app/features/home/presentation/screens/product_details_screen.dart';
 import 'package:flutter/material.dart';
-import 'routes.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/di/dependency_injection.dart';
+import 'routes.dart';
+
+// Screens & Providers
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/presentation/screens/login_page.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
+
+import '../../features/home/domain/entities/product_entity.dart';
 import '../../features/home/presentation/providers/home_provider.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/product_details_screen.dart';
+
+import '../../features/catalog/presentation/providers/catalog_provider.dart';
+import '../../features/catalog/presentation/screens/catalog_screen.dart';
+
+import '../../features/cart/presentation/screens/cart_screen.dart';
+
+import '../../features/orders/domain/entities/order_entity.dart';
+import '../../features/orders/presentation/providers/orders_provider.dart';
+import '../../features/orders/presentation/screens/checkout_screen.dart';
+import '../../features/orders/presentation/screens/order_success_screen.dart';
+import '../../features/orders/presentation/screens/orders_history_screen.dart';
+
+import '../../features/profile/presentation/providers/profile_provider.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 
 class AppRouter {
   Route? generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      
-      // 1. مسار تسجيل الدخول (Login)
+      // 0. شاشة البداية (Splash)
+      case Routes.splashScreen:
+        return MaterialPageRoute(
+          builder: (_) => const SplashScreen(),
+        );
+
+      // 1. شاشة تسجيل الدخول (Login)
       case Routes.loginScreen:
         return MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
@@ -24,7 +46,7 @@ class AppRouter {
           ),
         );
 
-      // 2. مسار الشاشة الرئيسية والمنتجات (Home)
+      // 2. الشاشة الرئيسية والمنتجات (Home)
       case Routes.homeScreen:
         return MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
@@ -33,59 +55,65 @@ class AppRouter {
           ),
         );
 
+      // 3. شاشة تفاصيل المنتج (Product Details)
+      case Routes.productDetailsScreen:
+        final product = settings.arguments as ProductEntity;
+        return MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(product: product),
+        );
 
+      // 4. شاشة تصفح الأقسام (Catalog)
+      case Routes.catalogScreen:
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<CatalogProvider>(),
+            child: const CatalogScreen(),
+          ),
+        );
 
+      // 5. شاشة السلة (Cart)
+      case Routes.cartScreen:
+        final userId = settings.arguments as int? ?? 1;
+        return MaterialPageRoute(
+          builder: (_) => CartScreen(userId: userId),
+        );
 
+      // 6. شاشة إتمام الطلب والدفع (Checkout)
+      case Routes.checkoutScreen:
+        final userId = settings.arguments as int? ?? 1;
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<OrdersProvider>(),
+            child: CheckoutScreen(userId: userId),
+          ),
+        );
 
-                        // الاساسي
-        // ------------------------------
-        // -------------------------------
+      // 7. شاشة نجاح الطلب (Order Success)
+      case Routes.orderSuccessScreen:
+        final order = settings.arguments as OrderEntity?;
+        return MaterialPageRoute(
+          builder: (_) => OrderSuccessScreen(order: order),
+        );
 
-     // 3. مسار تفاصيل المنتج (Product Details)
-    //  case Routes.productDetailsScreen:
-    //   final product = settings.arguments as ProductEntity;
-    //   return MaterialPageRoute(
-    //     builder: (_) => ChangeNotifierProvider(
-    //       create: (_) => getIt<CartController>(),
-    //       child: ProductDetailsScreen(product: product),
-    //       ),
-    //     );
-        
-    //  case Routes.cartScreen:
-    //    final userId = settings.arguments as int? ?? 1; // إمكانية تمرير userId أو إعطاء قيمة افتراضية
-    //     return MaterialPageRoute(
-    //       builder: (_) => ChangeNotifierProvider(
-    //         create: (_) => getIt<CartController>(),
-    //         child: CartScreen(userId: userId),
-    //       ),
-    //     );
+      // 8. شاشة سجل الطلبات السابقة (Orders History)
+      case Routes.ordersHistoryScreen:
+        final userId = settings.arguments as int? ?? 1;
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<OrdersProvider>(),
+            child: OrdersHistoryScreen(userId: userId),
+          ),
+        );
 
+      // 9. شاشة الملف الشخصي (Profile)
+      case Routes.profileScreen:
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<ProfileProvider>(),
+            child: const ProfileScreen(),
+          ),
+        );
 
-                  // بيانات مؤقتة تخزين محلي
-        // ------------------------------
-        // -------------------------------
-
-
-    // 3. مسار تفاصيل المنتج (Product Details)
-case Routes.productDetailsScreen:
-  final product = settings.arguments as ProductEntity;
-  return MaterialPageRoute(
-    builder: (_) => ProductDetailsScreen(product: product), // 👈 ارجع الشاشة مباشرة بدون Provider
-  );
-
-// 4. مسار السلة (Cart)
-case Routes.cartScreen:
-  final userId = settings.arguments as int? ?? 1;
-  return MaterialPageRoute(
-    builder: (_) => CartScreen(userId: userId), // 👈 ارجع الشاشة مباشرة بدون Provider
-  );
-
-  
-  
-        // ------------------------------
-        // -------------------------------
-
-  
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

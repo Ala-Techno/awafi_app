@@ -38,19 +38,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
    appBar: AppBar(
   title: const Text('المتجر'),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.shopping_cart_outlined),
-      onPressed: () {
-        // الانتقال إلى شاشة السلة
-        Navigator.pushNamed(
-          context,
-          Routes.cartScreen,
-          arguments: 1, // تمرير userId (افتراضياً 1)
-        );
-      },
-    ),
-  ],
+   actions: [
+     IconButton(
+       icon: const Icon(Icons.category_outlined),
+       onPressed: () {
+         Navigator.pushNamed(context, Routes.catalogScreen);
+       },
+     ),
+     IconButton(
+       icon: const Icon(Icons.shopping_cart_outlined),
+       onPressed: () {
+         Navigator.pushNamed(
+           context,
+           Routes.cartScreen,
+           arguments: 1,
+         );
+       },
+     ),
+     IconButton(
+       icon: const Icon(Icons.person_outline),
+       onPressed: () {
+         Navigator.pushNamed(context, Routes.profileScreen);
+       },
+     ),
+   ],
 ),
       body: Consumer<HomeProvider>(
         builder: (context, provider, child) {

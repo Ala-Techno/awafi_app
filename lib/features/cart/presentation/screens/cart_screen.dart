@@ -1,3 +1,4 @@
+import 'package:awafi_app/app/routing/routes.dart';
 import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
 import 'package:awafi_app/features/cart/presentation/widgets/cart_item_tile.dart';
 import 'package:awafi_app/features/cart/presentation/widgets/cart_summary_bar.dart';
@@ -68,7 +69,11 @@ class _CartScreenState extends State<CartScreen> {
           : CartSummaryBar(
               totalPrice: cartController.totalPrice,
               onCheckout: () {
-                // الانتقال لشاشة اتمام الشراء
+                Navigator.pushNamed(
+                  context,
+                  Routes.checkoutScreen,
+                  arguments: widget.userId,
+                );
               },
             ),
     );

@@ -13,36 +13,44 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final SharedPrefService localDataSource;
 
-  // 1. حقن ساعي البريد (مصدر البيانات) عبر الـ Constructor
-  AuthRepositoryImpl({required this.remoteDataSource , required this.localDataSource});
+  // 1. حقن ساعي البريد (مصدر البيانات) ومصدر التخزين المحلي
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
 
   @override
   Future<ApiResult<UserEntity>> login({
-    required String email,
+    required String username,
     required String password,
   }) async {
     try {
       // 2. توجيه ساعي البريد لإجراء الاتصال والجلب
       final userModel = await remoteDataSource.login(
-        email: email,
+        username: username,
         password: password,
-      ); 
+      );
 
-     // 2. حفظ التوكن محلياً في ذاكرة الجهاز إذا كان موجوداً
+      // 3. حفظ التوكن وبيانات المستخدم محلياً في ذاكرة الجهاز إذا كان موجوداً
       if (userModel.token != null && userModel.token!.isNotEmpty) {
         await localDataSource.setData(ApiConstants.userTokenKey, userModel.token!);
+        await localDataSource.setData(ApiConstants.userIdKey, userModel.id);
+        await localDataSource.setData(ApiConstants.usernameKey, userModel.username);
       }
 
-      // 4. عند النجاح: تغليف الناتج في غلاف النجاح ApiResult.success
-      // (ملاحظة: userModel يُقبل كـ UserEntity تلقائياً لأنه يورث منه)
+      // 4. عند النجاح: تغليف الناتج في غلاف النجاح Success
       return Success(userModel);
-
     } catch (error) {
-    // 1. ترجمة الخطأ إلى Failure (ServerFailure/NetworkFailure)
-    final Failure failureObj = ApiErrorHandler.handle(error);
-
-    // 🔴 إرجاع فشل متوافق ومغلف داخل ApiFailure
-    return ApiFailure(failureObj);
+      // ترجمة الخطأ إلى Failure
+      final Failure failureObj = ApiErrorHandler.handle(error);
+      return ApiFailure(failureObj);
+    }
   }
+
+  @override
+  Future<void> logout() async {
+    await localDataSource.removeData(ApiConstants.userTokenKey);
+    await localDataSource.removeData(ApiConstants.userIdKey);
+    await localDataSource.removeData(ApiConstants.usernameKey);
   }
 }

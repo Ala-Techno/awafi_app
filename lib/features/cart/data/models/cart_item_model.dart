@@ -17,14 +17,14 @@ class CartItemModel extends CartItemEntity {
       productEntity = ProductModel.fromJson(json['product'] as Map<String, dynamic>);
     } else {
       // إذا أرجع السيرفر productId فقط بدون تفاصيل المنتج
-      productEntity = ProductModel(
-        id: json['productId'] as int? ?? 0,
-        title: 'منتج #${json['productId'] ?? 0}',
+      productEntity = const ProductModel(
+        id: 0,
+        title: 'منتج',
         price: 0.0,
         image: '',
         description: '',
         category: '',
-        rating: const {},
+        rating: ProductRating(rate: 0.0, count: 0),
       );
     }
 

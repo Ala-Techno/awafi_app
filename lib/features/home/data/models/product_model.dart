@@ -1,5 +1,8 @@
 import '../../domain/entities/product_entity.dart';
 
+/// [ProductModel] — Data layer representation of a product.
+/// Extends [ProductEntity] (Domain) to honor the "Inside-Out" rule:
+/// Data depends on Domain, never the reverse.
 class ProductModel extends ProductEntity {
   const ProductModel({
     required super.id,
@@ -11,21 +14,27 @@ class ProductModel extends ProductEntity {
     required super.rating,
   });
 
-  // دالة التحويل من JSON إلى Object
+  // ═══════════════════════════════════════════════════════════════════
+  //  ACTIVE CODE — FakeStore API Deserialization
+  //  FakeStore rating shape: { "rate": 3.9, "count": 120 }
+  // ═══════════════════════════════════════════════════════════════════
+
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final ratingMap = json['rating'] as Map<String, dynamic>? ?? {};
     return ProductModel(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      image: json['image'] ?? '',
-      description: json['description'] ?? '',
-      category: json['category'] ?? '',
-      rating: json['rating'] != null 
-      ? Map<String, dynamic>.from(json['rating']) 
-      : {},);
+      image: json['image'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      rating: ProductRating(
+        rate: (ratingMap['rate'] as num?)?.toDouble() ?? 0.0,
+        count: ratingMap['count'] as int? ?? 0,
+      ),
+    );
   }
 
-  // دالة التحويل من Object إلى JSON (إذا احتجنا إرساله)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -34,19 +43,49 @@ class ProductModel extends ProductEntity {
       'image': image,
       'description': description,
       'category': category,
-      'rating': rating,
-    };  
+      'rating': {
+        'rate': rating.rate,
+        'count': rating.count,
+      },
+    };
   }
 
   factory ProductModel.fromEntity(ProductEntity entity) {
-  return ProductModel(
-    id: entity.id,
-    title: entity.title,
-    price: entity.price,
-    description: entity.description,
-    category: entity.category,
-    image: entity.image,
-    rating: entity.rating,
-  );
-}
+    return ProductModel(
+      id: entity.id,
+      title: entity.title,
+      price: entity.price,
+      description: entity.description,
+      category: entity.category,
+      image: entity.image,
+      rating: entity.rating,
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  PRODUCTION SERVER — Extended fromJson (Commented)
+  //  Real API may include: sku, stockQuantity, images[], brand, etc.
+  // ═══════════════════════════════════════════════════════════════════
+  //
+  // factory ProductModel.fromJson(Map<String, dynamic> json) {
+  //   final ratingMap = json['rating'] as Map<String, dynamic>? ?? {};
+  //   return ProductModel(
+  //     id: json['id'] as int? ?? 0,
+  //     title: json['title'] as String? ?? '',
+  //     price: (json['price'] as num?)?.toDouble() ?? 0.0,
+  //     image: (json['images'] as List?)?.first ?? json['image'] ?? '',
+  //     description: json['description'] as String? ?? '',
+  //     category: json['category']?['name'] ?? json['category'] ?? '',
+  //     rating: ProductRating(
+  //       rate: (ratingMap['rate'] as num?)?.toDouble() ?? 0.0,
+  //       count: ratingMap['count'] as int? ?? 0,
+  //     ),
+  //     // Extended fields:
+  //     // sku: json['sku'] as String? ?? '',
+  //     // stockQuantity: json['stock'] as int? ?? 0,
+  //     // brand: json['brand'] as String? ?? '',
+  //     // discountedPrice: (json['discounted_price'] as num?)?.toDouble(),
+  //   );
+  // }
+  // ═══════════════════════════════════════════════════════════════════
 }
