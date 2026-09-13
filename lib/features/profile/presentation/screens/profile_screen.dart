@@ -1,4 +1,5 @@
 import 'package:awafi_app/app/routing/routes.dart';
+import 'package:awafi_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
@@ -16,22 +17,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneController = TextEditingController();
   bool _isEditing = false;
 
-  @override
+ @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<ProfileProvider>();
       await provider.fetchProfile();
       if (!mounted) return;
-      final profile = provider.profile;
-      if (profile != null) {
-        _usernameController.text = profile.username;
-        _emailController.text = profile.email;
-        _phoneController.text = profile.phone;
+      
+      // تحديث الـ Controllers بعد جلب البيانات مباشرة
+      if (provider.profile != null) {
+        _usernameController.text = provider.profile!.username;
+        _emailController.text = provider.profile!.email;
+        _phoneController.text = provider.profile!.phone;
       }
     });
   }
-
   @override
   void dispose() {
     _usernameController.dispose();
@@ -79,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirm != true || !mounted) return;
 
-    await context.read<ProfileProvider>().logout();
+    await context.read<AuthProvider>().logout();
     if (!mounted) return;
 
     Navigator.pushNamedAndRemoveUntil(
@@ -189,13 +190,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle: const Text('عرض الطلبات السابقة وحالتها'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      Navigator.pushNamed(context, Routes.ordersHistoryScreen);
+                      final userId = provider.profile?.id ?? ''; // أو معرف المستخدم من الـ Provider
+                      Navigator.pushNamed(
+                        context,
+                        Routes.ordersHistoryScreen,
+                        arguments: userId, // 👈 تمرير الـ userId بسلام
+                      );
                     },
                   ),
                 ),
                 const SizedBox(height: 12),
 
-                // رابط الأقسام والتصنيفات
                 Card(
                   elevation: 1,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

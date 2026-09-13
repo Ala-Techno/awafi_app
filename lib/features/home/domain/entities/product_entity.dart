@@ -19,24 +19,23 @@ class ProductRating {
   // ═══════════════════════════════════════════════════════════════════
 }
 
-/// [ProductEntity] — Pure Domain object for a product.
-/// No dependencies on Flutter, Dio, or any external library.
+
 class ProductEntity {
-  final int id;
+  final String id;
   final String title;
   final double price;
-  final String image;
+  final String imageUrl;
   final String description;
-  final String category;
+  final String categoryId;
   final ProductRating rating;
 
   const ProductEntity({
     required this.id,
     required this.title,
     required this.price,
-    required this.image,
+    required this.imageUrl,
     required this.description,
-    required this.category,
+    required this.categoryId,
     required this.rating,
   });
 

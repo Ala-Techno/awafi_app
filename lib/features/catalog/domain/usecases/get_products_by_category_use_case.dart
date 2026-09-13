@@ -7,7 +7,7 @@ class GetProductsByCategoryUseCase {
 
   const GetProductsByCategoryUseCase(this.repository);
 
-  Future<ApiResult<List<ProductEntity>>> call(String category) {
-    return repository.getProductsByCategory(category);
+  Future<ApiResult<List<ProductEntity>>> call(String categoryId) {
+    return repository.getProductsByCategory(categoryId);
   }
 }

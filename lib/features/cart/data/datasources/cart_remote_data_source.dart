@@ -1,93 +1,54 @@
-import 'package:awafi_app/core/errors/exceptions.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/api_constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/errors/exceptions.dart';
+import '../../../home/data/models/product_model.dart';
 import '../models/cart_item_model.dart';
 
-/// 1. العقد (Abstract Class)
 abstract class CartRemoteDataSource {
-  Future<List<CartItemModel>> getCartItems(int userId);
-  Future<List<CartItemModel>> addToCart(int userId, int productId, int quantity);
-  Future<List<CartItemModel>> updateQuantity(int cartId, int productId, int newQuantity);
-  Future<List<CartItemModel>> removeFromCart(int cartId);
-  Future<List<CartItemModel>> clearCart(int cartId);
+  Future<List<CartItemModel>> getCartItems(String userId);
+  Future<List<CartItemModel>> addToCart(String userId, String productId, int quantity);
+  Future<List<CartItemModel>> updateQuantity(String userId, String productId, int newQuantity);
+  Future<List<CartItemModel>> removeFromCart(String userId, String productId);
+  Future<List<CartItemModel>> clearCart(String userId);
 }
 
-/// 2. التنفيذ الفعلي (Implementation)
-class CartRemoteDataSourceImpl implements CartRemoteDataSource {
-  final Dio dio;
+class CartFirebaseDataSourceImpl implements CartRemoteDataSource {
+  final FirebaseFirestore firestore;
 
-  CartRemoteDataSourceImpl({required this.dio});
+  CartFirebaseDataSourceImpl({required this.firestore});
 
-  @override
-  Future<List<CartItemModel>> getCartItems(int userId) async {
-    try {
-      final response = await dio.get('${ApiConstants.apiBaseUrl}${ApiConstants.userCart}$userId');
+  CollectionReference<Map<String, dynamic>> _cartItems(String userId) =>
+      firestore.collection('carts').doc(userId).collection('items');
 
-      final List cartsList = response.data;
-      if (cartsList.isEmpty) return [];
-
-      final List productsJson = cartsList.first['products'] ?? [];
-
-      return productsJson.map((json) => CartItemModel.fromJson(json)).toList();
-    } on DioException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'حدث خطأ في الاتصال بالسيرفر',
-        statusCode: e.response?.statusCode,
-      );
-    } catch (e) {
-      throw ServerException(message: 'خطأ غير متوقع: $e');
-    }
-  }
-
-@override
-Future<List<CartItemModel>> addToCart(int userId, int productId, int quantity) async {
-  try {
-    final response = await dio.post(
-      '${ApiConstants.apiBaseUrl}${ApiConstants.carts}',
-      data: {
-        'userId': userId,
-        'date': DateTime.now().toIso8601String().split('T')[0],
-        'products': [
-          {'productId': productId, 'quantity': quantity}
-        ],
-      },
-    );
-
-    // حماية القراءة في حال كان response.data ليس Map
-    if (response.data != null && response.data is Map<String, dynamic>) {
-      final List productsJson = response.data['products'] ?? [];
-      return productsJson.map((json) => CartItemModel.fromJson(json as Map<String, dynamic>)).toList();
-    }
-
-    return [];
-  } on DioException catch (e) {
-    throw ServerException(
-      message: e.message ?? 'حدث خطأ أثناء الإضافة للسلة',
-      statusCode: e.response?.statusCode,
-    );
-  } catch (e) {
-    throw ServerException(message: 'خطأ غير متوقع: $e');
-  }
-}
+  DocumentReference<Map<String, dynamic>> _productDoc(String productId) =>
+      firestore.collection('products').doc(productId);
 
   @override
-  Future<List<CartItemModel>> updateQuantity(int cartId, int productId, int newQuantity) async {
+  Future<List<CartItemModel>> getCartItems(String userId) async {
     try {
-      final response = await dio.put(
-        '${ApiConstants.apiBaseUrl}${ApiConstants.carts}/$cartId',
-        data: {
-          'products': [
-            {'productId': productId, 'quantity': newQuantity}
-          ],
-        },
-      );
+      final snapshot = await _cartItems(userId).get();
+      if (snapshot.docs.isEmpty) return [];
 
-      final List productsJson = response.data['products'] ?? [];
-      return productsJson.map((json) => CartItemModel.fromJson(json)).toList();
-    } on DioException catch (e) {
+      final futures = snapshot.docs.map((doc) async {
+        final data = doc.data();
+        final productId = data['productId'] ?? doc.id;
+        final productSnap = await _productDoc(productId).get();
+
+        if (!productSnap.exists) return null;
+
+        final product = ProductModel.fromJson({
+          'id': productSnap.id,
+          ...productSnap.data()!,
+        });
+
+        return CartItemModel.fromFirestore(doc: doc, product: product);
+      });
+
+      final results = await Future.wait(futures);
+      return results.whereType<CartItemModel>().toList();
+    } on FirebaseException catch (e) {
       throw ServerException(
-        message: e.message ?? 'حدث خطأ أثناء تعديل الكمية',
-        statusCode: e.response?.statusCode,
+        message: e.message ?? 'خطأ في الاتصال بـ Firestore',
+        statusCode: null,
       );
     } catch (e) {
       throw ServerException(message: 'خطأ غير متوقع: $e');
@@ -95,29 +56,80 @@ Future<List<CartItemModel>> addToCart(int userId, int productId, int quantity) a
   }
 
   @override
-  Future<List<CartItemModel>> removeFromCart(int cartId) async {
+  Future<List<CartItemModel>> addToCart(
+      String userId, String productId, int quantity) async {
     try {
-      await dio.delete('${ApiConstants.apiBaseUrl}${ApiConstants.carts}/$cartId');
+      final docRef = _cartItems(userId).doc(productId);
+      final existing = await docRef.get();
+
+      if (existing.exists) {
+        final currentQty = existing.data()?['quantity'] as int? ?? 0;
+        await docRef.update({'quantity': currentQty + quantity});
+      } else {
+        await docRef.set({
+          'productId': productId,
+          'quantity': quantity,
+          'addedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      return getCartItems(userId);
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'خطأ أثناء الإضافة للسلة',
+        statusCode: null,
+      );
+    } catch (e) {
+      throw ServerException(message: 'خطأ غير متوقع: $e');
+    }
+  }
+
+  @override
+  Future<List<CartItemModel>> updateQuantity(
+      String userId, String productId, int newQuantity) async {
+    try {
+      await _cartItems(userId).doc(productId).update({'quantity': newQuantity});
+      return getCartItems(userId);
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'خطأ أثناء تعديل الكمية',
+        statusCode: null,
+      );
+    } catch (e) {
+      throw ServerException(message: 'خطأ غير متوقع: $e');
+    }
+  }
+
+  @override
+  Future<List<CartItemModel>> removeFromCart(
+      String userId, String productId) async {
+    try {
+      await _cartItems(userId).doc(productId).delete();
+      return getCartItems(userId);
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'خطأ أثناء حذف المنتج من السلة',
+        statusCode: null,
+      );
+    } catch (e) {
+      throw ServerException(message: 'خطأ غير متوقع: $e');
+    }
+  }
+
+  @override
+  Future<List<CartItemModel>> clearCart(String userId) async {
+    try {
+      final snapshot = await _cartItems(userId).get();
+      final batch = firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
       return [];
-    } on DioException catch (e) {
+    } on FirebaseException catch (e) {
       throw ServerException(
-        message: e.message ?? 'حدث خطأ أثناء الحذف من السلة',
-        statusCode: e.response?.statusCode,
-      );
-    } catch (e) {
-      throw ServerException(message: 'خطأ غير متوقع: $e');
-    }
-  }
-
-  @override
-  Future<List<CartItemModel>> clearCart(int cartId) async {
-    try {
-      await dio.delete('${ApiConstants.apiBaseUrl}${ApiConstants.carts}/$cartId');
-      return [];
-    } on DioException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'حدث خطأ أثناء إفراغ السلة',
-        statusCode: e.response?.statusCode,
+        message: e.message ?? 'خطأ أثناء إفراغ السلة',
+        statusCode: null,
       );
     } catch (e) {
       throw ServerException(message: 'خطأ غير متوقع: $e');

@@ -3,6 +3,8 @@ import 'package:awafi_app/core/errors/api_result.dart';
 import 'package:awafi_app/core/errors/failures.dart';
 import 'package:awafi_app/core/network/api_constants.dart';
 import 'package:awafi_app/core/services/shared_pref_service.dart';
+import 'package:awafi_app/core/utils/unit.dart';
+import 'package:awafi_app/features/auth/data/datasources/auth_local_data_source.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
@@ -11,9 +13,8 @@ import '../datasources/auth_remote_data_source.dart';
 /// يربط طبقة الـ Data بعقد طبقة الـ Domain، ويحمي التطبيق بـ try/catch
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
-  final SharedPrefService localDataSource;
+  final AuthLocalDataSource localDataSource;
 
-  // 1. حقن ساعي البريد (مصدر البيانات) ومصدر التخزين المحلي
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
@@ -21,36 +22,70 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<ApiResult<UserEntity>> login({
-    required String username,
+    required String email, // يُرسل كبريد إلكتروني
     required String password,
   }) async {
     try {
-      // 2. توجيه ساعي البريد لإجراء الاتصال والجلب
       final userModel = await remoteDataSource.login(
-        username: username,
+        email: email,
         password: password,
       );
 
-      // 3. حفظ التوكن وبيانات المستخدم محلياً في ذاكرة الجهاز إذا كان موجوداً
-      if (userModel.token != null && userModel.token!.isNotEmpty) {
-        await localDataSource.setData(ApiConstants.userTokenKey, userModel.token!);
-        await localDataSource.setData(ApiConstants.userIdKey, userModel.id);
-        await localDataSource.setData(ApiConstants.usernameKey, userModel.username);
-      }
+// تخزين بيانات المستخدم الأساسية محلياً (مع الاحتفاظ بـ id والبريد للاستخدام السريع)
+    await localDataSource.cacheUserId(userModel.id);
+    
+    
 
-      // 4. عند النجاح: تغليف الناتج في غلاف النجاح Success
       return Success(userModel);
     } catch (error) {
-      // ترجمة الخطأ إلى Failure
       final Failure failureObj = ApiErrorHandler.handle(error);
       return ApiFailure(failureObj);
     }
   }
 
   @override
+  Future<ApiResult<UserEntity>> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String phone,
+  }) async {
+    try {
+      final userModel = await remoteDataSource.register(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        phone: phone,
+      );
+
+     await localDataSource.cacheUserId(userModel.id);
+      
+
+      return Success(userModel);
+    } catch (error) {
+      final Failure failureObj = ApiErrorHandler.handle(error);
+      return ApiFailure(failureObj);
+    }
+  }
+  
+  
+
+  @override
   Future<void> logout() async {
-    await localDataSource.removeData(ApiConstants.userTokenKey);
-    await localDataSource.removeData(ApiConstants.userIdKey);
-    await localDataSource.removeData(ApiConstants.usernameKey);
+    await localDataSource.clearAuthData();
+    
+  }
+
+  @override
+  Future<ApiResult<Unit>> sendPasswordResetEmail(String email) async {
+    try {
+      await remoteDataSource.sendPasswordResetEmail(email);
+      return Success(unit);
+    } catch (error) {
+      final Failure failureObj = ApiErrorHandler.handle(error);
+      return ApiFailure(failureObj);
+    }
   }
 }

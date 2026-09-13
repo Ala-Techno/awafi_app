@@ -5,17 +5,17 @@ import 'package:provider/provider.dart';
 import '../providers/orders_provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  final int userId;
+  final String userId;
 
-  const CheckoutScreen({super.key, this.userId = 1});
+  const CheckoutScreen({super.key, required this.userId});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  final _addressController = TextEditingController(text: 'الرياض، المملكة العربية السعودية');
-  String _selectedPaymentMethod = 'بطاقة ائتمان / مدى';
+  final _addressController = TextEditingController();
+  String _selectedPaymentMethod = '';
 
   @override
   void dispose() {
@@ -27,6 +27,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final ordersProvider = context.read<OrdersProvider>();
     final items = cartController.cartItems;
     final total = cartController.totalPrice;
+
+    if (_selectedPaymentMethod.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى اختيار طريقة الدفع')),
+      );
+      return;
+    }
+
+    if (_addressController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى إدخال عنوان الشحن')),
+      );
+      return;
+    }
 
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,7 +200,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ? null
                     : () => _processCheckout(cartController),
                 style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: ordersProvider.isLoading
                     ? const CircularProgressIndicator(color: Colors.white)

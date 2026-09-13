@@ -4,8 +4,10 @@ import 'package:awafi_app/features/cart/presentation/widgets/cart_item_tile.dart
 import 'package:awafi_app/features/cart/presentation/widgets/cart_summary_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 class CartScreen extends StatefulWidget {
-  final int userId;
+  final String userId;
+
   const CartScreen({super.key, required this.userId});
 
   @override
@@ -13,21 +15,17 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-
-  // 1. Initializ (جلب البيانات أول ما تفتح الشاشة)
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<CartController>().fetchCartItems(widget.userId);
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CartController>().fetchCartItems(widget.userId);
+    });
   }
 
-  // 2. الشاشة نفسها (Build Method)
   @override
   Widget build(BuildContext context) {
-    final cartController = Provider.of<CartController>(context);
-    // final cartController = context.watch<CartController>();
+    final cartController = context.watch<CartController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -45,21 +43,26 @@ class _CartScreenState extends State<CartScreen> {
                     return CartItemTile(
                       item: item,
                       onIncrement: () {
-                       cartController.updateQuantityLocal(
-  cartItemId: item.id,
-  newQuantity: item.quantity + 1,
-);
+                        cartController.updateQuantity(
+                          userId: widget.userId,
+                          productId: item.id,
+                          newQuantity: item.quantity + 1,
+                        );
                       },
                       onDecrement: () {
-                       if (item.quantity > 1) {
-  cartController.updateQuantityLocal(
-    cartItemId: item.id,
-    newQuantity: item.quantity - 1,
-  );
+                        if (item.quantity > 1) {
+                          cartController.updateQuantity(
+                            userId: widget.userId,
+                            productId: item.id,
+                            newQuantity: item.quantity - 1,
+                          );
                         }
                       },
                       onRemove: () {
-                        cartController.removeFromCart(item.id);
+                        cartController.removeFromCart(
+                          userId: widget.userId,
+                          productId: item.id,
+                        );
                       },
                     );
                   },

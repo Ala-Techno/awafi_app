@@ -1,16 +1,13 @@
 import '../../domain/entities/product_entity.dart';
 
-/// [ProductModel] — Data layer representation of a product.
-/// Extends [ProductEntity] (Domain) to honor the "Inside-Out" rule:
-/// Data depends on Domain, never the reverse.
 class ProductModel extends ProductEntity {
   const ProductModel({
     required super.id,
     required super.title,
     required super.price,
-    required super.image,
+    required super.imageUrl,
     required super.description,
-    required super.category,
+    required super.categoryId,
     required super.rating,
   });
 
@@ -22,12 +19,12 @@ class ProductModel extends ProductEntity {
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     final ratingMap = json['rating'] as Map<String, dynamic>? ?? {};
     return ProductModel(
-      id: json['id'] as int? ?? 0,
+      id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      image: json['image'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String? ?? '',
       description: json['description'] as String? ?? '',
-      category: json['category'] as String? ?? '',
+      categoryId: json['categoryId'] as String? ?? '',
       rating: ProductRating(
         rate: (ratingMap['rate'] as num?)?.toDouble() ?? 0.0,
         count: ratingMap['count'] as int? ?? 0,
@@ -40,9 +37,9 @@ class ProductModel extends ProductEntity {
       'id': id,
       'title': title,
       'price': price,
-      'image': image,
+      'imageUrl': imageUrl,
       'description': description,
-      'category': category,
+      'categoryId': categoryId,
       'rating': {
         'rate': rating.rate,
         'count': rating.count,
@@ -56,8 +53,8 @@ class ProductModel extends ProductEntity {
       title: entity.title,
       price: entity.price,
       description: entity.description,
-      category: entity.category,
-      image: entity.image,
+      categoryId: entity.categoryId,
+      imageUrl: entity.imageUrl,
       rating: entity.rating,
     );
   }

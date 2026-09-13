@@ -3,21 +3,24 @@ import '../entities/cart_item_entity.dart';
 
 /// [CartRepository] - عقد مستودع السلة في طبقة الـ Domain
 abstract class CartRepository {
-  /// جلب جميع عناصر السلة
-  Future<ApiResult<List<CartItemEntity>>> getCartItems(int userId);
+  /// جلب جميع عناصر السلة للمستخدم من Firestore
+  Future<ApiResult<List<CartItemEntity>>> getCartItems(String userId);
 
-  /// إضافة منتج إلى السلة باستخدام الـ ID والكمية
-  Future<ApiResult<List<CartItemEntity>>> addToCart(int userId, int productId, int quantity);  
+  /// إضافة منتج إلى السلة أو تحديث كميته إن كان موجوداً
+  Future<ApiResult<List<CartItemEntity>>> addToCart(
+      String userId, String productId, int quantity);
 
   /// تعديل كمية منتج في السلة
-  Future<ApiResult<List<CartItemEntity>>> updateQuantity(int cartId, int productId, int newQuantity);
+  Future<ApiResult<List<CartItemEntity>>> updateQuantity(
+      String userId, String productId, int newQuantity);
 
   /// حذف منتج من السلة
-  Future<ApiResult<List<CartItemEntity>>> removeFromCart(int cartId);
+  Future<ApiResult<List<CartItemEntity>>> removeFromCart(
+      String userId, String productId);
 
   /// إفراغ السلة بالكامل
-  Future<ApiResult<List<CartItemEntity>>> clearCart(int userId);
+  Future<ApiResult<List<CartItemEntity>>> clearCart(String userId);
 
   /// دالة التأكد من وجود المنتج في السلة أم لا بواسطة الـ ID
-  bool isProductInCart(int productId);
+  bool isProductInCart(String productId);
 }

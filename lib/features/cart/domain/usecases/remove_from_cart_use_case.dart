@@ -7,7 +7,10 @@ class RemoveFromCartUseCase {
 
   const RemoveFromCartUseCase(this.repository);
 
-  Future<ApiResult<List<CartItemEntity>>> call(int cartId) {
-    return repository.removeFromCart(cartId);
+  Future<ApiResult<List<CartItemEntity>>> call({
+    required String userId,
+    required String productId,
+  }) {
+    return repository.removeFromCart(userId, productId);
   }
 }

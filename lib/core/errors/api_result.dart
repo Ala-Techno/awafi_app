@@ -1,7 +1,19 @@
-import 'failures.dart'; // استدعاء ملف الأخطاء إذا لزم الأمر
+import 'package:awafi_app/core/errors/failures.dart';
 
 abstract class ApiResult<T> {
   const ApiResult();
+
+  R when<R>({
+    required R Function(T data) success,
+    required R Function(Failure failure) failure,
+  }) {
+    if (this is Success<T>) {
+      return success((this as Success<T>).data);
+    } else if (this is ApiFailure<T>) {
+      return failure((this as ApiFailure<T>).failure);
+    }
+    throw Exception('Invalid ApiResult state');
+  }
 }
 
 class Success<T> extends ApiResult<T> {
@@ -9,9 +21,7 @@ class Success<T> extends ApiResult<T> {
   const Success(this.data);
 }
 
-// 🟢 قم بتغيير الاسم هنا من Failure إلى ApiFailure أو FailureResult
 class ApiFailure<T> extends ApiResult<T> {
-  final Failure failure; // يفضل أن يحمل كائن Failure المترجم من الـ Handler
-  
+  final Failure failure;
   const ApiFailure(this.failure);
 }

@@ -1,13 +1,18 @@
 import 'package:awafi_app/core/errors/api_result.dart';
 import 'package:awafi_app/features/cart/domain/entities/cart_item_entity.dart';
+import 'package:awafi_app/features/orders/domain/usecases/get_order_history_use_case.dart';
+import 'package:awafi_app/features/orders/domain/usecases/place_order_use_case.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/order_entity.dart';
-import '../../domain/repositories/orders_repository.dart';
 
 class OrdersProvider extends ChangeNotifier {
-  final OrdersRepository ordersRepository;
+  final PlaceOrderUseCase placeOrderUseCase;
+  final GetOrderHistoryUseCase getOrderHistoryUseCase;
 
-  OrdersProvider({required this.ordersRepository});
+  OrdersProvider({
+    required this.placeOrderUseCase,
+    required this.getOrderHistoryUseCase,
+  });
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -20,7 +25,7 @@ class OrdersProvider extends ChangeNotifier {
   OrderEntity? get lastPlacedOrder => _lastPlacedOrder;
 
   Future<bool> placeOrder({
-    required int userId,
+    required String userId,
     required List<CartItemEntity> items,
     required double totalAmount,
     required String paymentMethod,
@@ -30,7 +35,7 @@ class OrdersProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    final result = await ordersRepository.placeOrder(
+    final result = await placeOrderUseCase.call(
       userId: userId,
       items: items,
       totalAmount: totalAmount,
@@ -54,12 +59,12 @@ class OrdersProvider extends ChangeNotifier {
     return isSuccess;
   }
 
-  Future<void> fetchOrderHistory(int userId) async {
+  Future<void> fetchOrderHistory(String userId) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await ordersRepository.getOrderHistory(userId);
+    final result = await getOrderHistoryUseCase.call(userId);
 
     if (result is Success<List<OrderEntity>>) {
       _orders = result.data;

@@ -8,5 +8,4 @@ abstract class ProfileRepository {
     required String email,
     required String phone,
   });
-  Future<void> logout();
 }

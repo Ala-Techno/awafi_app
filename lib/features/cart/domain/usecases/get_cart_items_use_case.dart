@@ -7,7 +7,7 @@ class GetCartItemsUseCase {
 
   const GetCartItemsUseCase(this.repository);
 
-  Future<ApiResult<List<CartItemEntity>>> call(int userId) {
+  Future<ApiResult<List<CartItemEntity>>> call(String userId) {
     return repository.getCartItems(userId);
   }
 }

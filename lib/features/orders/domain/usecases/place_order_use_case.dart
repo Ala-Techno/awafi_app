@@ -9,18 +9,18 @@ class PlaceOrderUseCase {
   const PlaceOrderUseCase(this.repository);
 
   Future<ApiResult<OrderEntity>> call({
-    required int userId,
+    required String userId,
     required List<CartItemEntity> items,
     required double totalAmount,
-    required String paymentMethod,
-    required String shippingAddress,
+    String? paymentMethod,
+    String? shippingAddress,
   }) {
     return repository.placeOrder(
       userId: userId,
       items: items,
       totalAmount: totalAmount,
-      paymentMethod: paymentMethod,
-      shippingAddress: shippingAddress,
+      paymentMethod: paymentMethod ?? 'cash',
+      shippingAddress: shippingAddress ?? 'no address',
     );
   }
 }

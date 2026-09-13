@@ -2,6 +2,7 @@ import 'package:awafi_app/app/routing/routes.dart';
 import 'package:awafi_app/core/di/dependency_injection.dart';
 import 'package:awafi_app/core/network/api_constants.dart';
 import 'package:awafi_app/core/services/shared_pref_service.dart';
+import 'package:awafi_app/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -21,12 +22,13 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
-
-    final sharedPref = getIt<SharedPrefService>();
-    final String token = sharedPref.getString(ApiConstants.userTokenKey);
-
-    if (token.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, Routes.homeScreen);
+    
+    // نطلب من الـ LocalDataSource مباشرة عبر الـ GetIt (بدلاً من الـ SharedPrefService)
+    final authLocalDataSource = getIt<AuthLocalDataSource>();
+    final String? userId = authLocalDataSource.getCachedUserId();
+    
+    if (userId != null && userId.isNotEmpty) {
+      Navigator.pushReplacementNamed(context, Routes.mainNavigationScreen);
     } else {
       Navigator.pushReplacementNamed(context, Routes.loginScreen);
     }

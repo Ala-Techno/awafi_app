@@ -1,12 +1,17 @@
 import 'package:awafi_app/core/errors/api_result.dart';
+import 'package:awafi_app/features/profile/domain/usecases/get_profile_use_case.dart';
+import 'package:awafi_app/features/profile/domain/usecases/update_profile_use_case.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/profile_entity.dart';
-import '../../domain/repositories/profile_repository.dart';
 
 class ProfileProvider extends ChangeNotifier {
-  final ProfileRepository profileRepository;
+  final GetProfileUseCase getProfileUseCase;
+  final UpdateProfileUseCase updateProfileUseCase;
 
-  ProfileProvider({required this.profileRepository});
+  ProfileProvider({
+    required this.getProfileUseCase,
+    required this.updateProfileUseCase,
+  });
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -21,7 +26,7 @@ class ProfileProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    final result = await profileRepository.getProfile();
+    final result = await getProfileUseCase.call();
 
     if (result is Success<ProfileEntity>) {
       _profile = result.data;
@@ -42,7 +47,7 @@ class ProfileProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    final result = await profileRepository.updateProfile(
+    final result = await updateProfileUseCase.call(
       username: username,
       email: email,
       phone: phone,
@@ -61,16 +66,5 @@ class ProfileProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
     return isSuccess;
-  }
-
-  Future<void> logout() async {
-    _isLoading = true;
-    notifyListeners();
-
-    await profileRepository.logout();
-    _profile = null;
-
-    _isLoading = false;
-    notifyListeners();
   }
 }

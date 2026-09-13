@@ -4,13 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
-/// [LoginPage] - شاشة تسجيل الدخول (View / UI)
-/// 
-/// المسؤوليات:
-/// 1. رسم عناصر الواجهة (حقول البريد، كلمة المرور، زر الدخول).
-/// 2. إدارة دورة حياة متحكمات حقول النصوص (TextEditingController) وتنظيف الذاكرة.
-/// 3. استقبال كبسات الأزرار واستدعاء الكنترولر (AuthProvider).
-/// 4. التفاعل مع ردود أفعال الكنترولر (عرض دائرة التحميل، الانتقال، إظهار رسالة الخطأ).
+/// [LoginPage] - شاشة تسجيل الدخول بتصميم احترافي (World-Class UI/UX)
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -19,137 +13,241 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // -------------------------------------------------------------
-  // 1. UI Local State & Controllers (متحكمات ذاكرة الواجهة فقط)
-  // -------------------------------------------------------------
-  /// مفتاح الـ Form للتأكد من صحة البيانات المدخلة قبل الإرسال
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  /// متحكمات حقول النصوص لقراءة المدخلات
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
+  
+  // حالة التحكم بإظهار أو إخفاء كلمة المرور (UX Feature)
+  bool _obscurePassword = true;
 
-  // -------------------------------------------------------------
-  // 2. Lifecycle Methods (دوال إدارة ذاكرة RAM)
-  // -------------------------------------------------------------
   @override
   void initState() {
     super.initState();
-    // حجز مساحة في الذاكرة لمتحكمات النصوص فور فتح الشاشة
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    // تدمير وتفريغ متحكمات النصوص من الذاكرة فور إغلاق الشاشة لمنع Memory Leaks
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // -------------------------------------------------------------
-  // 3. User Action Handler (دالة معالجة ضغط زر الدخول)
-  // -------------------------------------------------------------
-  Future<void> _handleLogin( ) async {
-    // أ) التأكد من صحة كتابة الإيميل والباسورد في الحقول
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // ب) استدعاء دالة الكنترولر وتمرير البيانات الصافية وانتظار نتيجة الـ bool
+    // إخفاء لوحة المفاتيح لتجربة مستخدم مريحة
+    FocusScope.of(context).unfocus();
+
     final bool isSuccess = await context.read<AuthProvider>().login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
 
-    // ج) الحماية: التأكد من أن الشاشة ما زالت مفتوحة وموجودة في الشجرة قبل استخدام context
     if (!mounted) return;
 
-    // د) اتخاذ قرار الشاشة بناءً على النتيجة الراجعة من الكنترولر
     if (isSuccess) {
-      // حالة النجاح: الانتقال للشاشة الرئيسية وتدمير شاشة الدخول من مكدس الشاشات
-    Navigator.pushReplacementNamed(context, Routes.homeScreen);    } else {
-      // حالة الفشل: عرض شريط تنبيه بصري (SnackBar) يحوي نص الخطأ القادم من الكنترولر
+      Navigator.pushReplacementNamed(context, Routes.mainNavigationScreen);
+    } else {
+      final errorMessage = context.read<AuthProvider>().errorMessage ?? 'حدث خطأ في تسجيل الدخول';
+      
+      // استخدام تصميم أنظف وأدق للـ SnackBar مع أيقونة تحذير
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.read<AuthProvider>().errorMessage ?? 'حدث خطأ في تسجيل الدخول'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text(errorMessage, style: const TextStyle(fontSize: 14))),
+            ],
+          ),
+          backgroundColor: Colors.redAccent.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
         ),
       );
     }
   }
 
-  // -------------------------------------------------------------
-  // 4. Widget Tree Build (رسم مكونات الواجهة والربط بالـ Provider)
-  // -------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-  //   // نأخذ نسخة من الكنترولر بدون استماع (listen: false) 
-  // // لأننا نقتصر على استدعاء دالة _handleLogin فقط
-  // final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title:  Text(AppStrings.login),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Center(
-            child: SingleChildScrollView(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Form(
+              key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // --- حقل البريد الإلكتروني ---
+                  // --- 1. الهوية البصرية (الشعار / العنوان الترحيبي) ---
+                  const Icon(
+                    Icons.lock_person_rounded,
+                    size: 80,
+                    color: Colors.blue, // أو لون الهوية الأساسي لمشروع عوافي
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    AppStrings.login,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'أهلاً بك مجدداً، يسعدنا وجودك معنا',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // --- 2. حقل البريد الإلكتروني ---
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
+                    textInputAction: TextInputAction.next, // الانتقال التلقائي للحقل التالي
+                    decoration: InputDecoration(
                       labelText: 'البريد الإلكتروني',
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
+                      hintText: 'example@domain.com',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'يرجى إدخال البريد الإلكتروني';
                       }
+                      if (!value.contains('@') || !value.contains('.')) {
+                        return 'يرجى إدخال بريد إلكتروني صالح';
+                      }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // --- حقل كلمة المرور ---
+                  // --- 3. حقل كلمة المرور ---
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _handleLogin(),
+                    decoration: InputDecoration(
                       labelText: 'كلمة المرور',
-                      prefixIcon: Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'يرجى إدخال كلمة المرور';
                       }
+                      if (value.length < 6) {
+                        return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                      }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                     const SizedBox(height: 22),
 
-                  // --- الزر الديناميكي (يتغير مع حالة الكنترولر) ---
-                Consumer<AuthProvider>(
-            builder: (context, provider, child) {
-              return ElevatedButton(
+                      // --- أضف زر نسيت كلمة المرور هنا ---
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, Routes.resetPasswordScreen);
+                      },
+                      child: const Text('هل نسيت كلمة المرور؟'),
+                    ),
+                  ),
 
-               onPressed: provider.isLoading ? null : _handleLogin,
-                child: provider.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('تسجيل الدخول'),
-              );
+                  
+                  // --- 4. الزر الاحترافي مع تفاعل التحميل ---
+                  Consumer<AuthProvider>(
+                    builder: (context, provider, child) {
+                      return SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: provider.isLoading ? null : _handleLogin,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: provider.isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  'تسجيل الدخول',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      );
+                      },
+                  ),
+                  const SizedBox(height: 20),
+
+          // --- رابط الانتقال لإنشاء حساب جديد ---
+           Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'ليس لديك حساب؟',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+          TextButton(
+            onPressed: () {
+              // الانتقال إلى شاشة التسجيل
+              Navigator.pushNamed(context, Routes.registerScreen); // أو استبدل المسار باسم مسارك المعتمد
             },
+            child: const Text(
+            'إنشاء حساب',
+            style: TextStyle(fontWeight: FontWeight.bold),
+            ),  
           ),
+        ],
+      ),
                 ],
               ),
             ),

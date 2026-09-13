@@ -1,3 +1,8 @@
+import 'package:awafi_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:awafi_app/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:awafi_app/features/home/presentation/screens/main_navigation_screen.dart';
+import 'package:awafi_app/features/search/presentation/providers/search_provider.dart';
+import 'package:awafi_app/features/search/presentation/screens/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,12 +34,26 @@ import '../../features/profile/presentation/providers/profile_provider.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  static void navigateToScreen(String routeName, {Object? arguments}) {
+    navigatorKey.currentState?.pushNamed(routeName, arguments: arguments);
+  }
   Route? generateRoute(RouteSettings settings) {
     switch (settings.name) {
       // 0. شاشة البداية (Splash)
       case Routes.splashScreen:
         return MaterialPageRoute(
           builder: (_) => const SplashScreen(),
+        );
+
+      // الشاشة الرئيسية مع الشريط السفلي (IndexedStack Container)
+      case Routes.mainNavigationScreen:
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<HomeProvider>(),
+            child: const MainNavigationScreen(),
+          ),
         );
 
       // 1. شاشة تسجيل الدخول (Login)
@@ -46,6 +65,39 @@ class AppRouter {
           ),
         );
 
+        // 2. شاشة تسجيل الدخول (Register)
+      case Routes.registerScreen:
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<AuthProvider>(),
+            child: const RegisterPage(),
+          ),
+        );
+
+        case Routes.searchScreen:
+        return MaterialPageRoute(
+          builder: (_) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => getIt<SearchProvider>(),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => getIt<HomeProvider>(),
+              ), // ممكن تحتاج الهوم بروفايدر
+            ],
+            child: const SearchScreen(),
+          ),
+        );
+
+      case Routes.resetPasswordScreen:
+        return MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => getIt<AuthProvider>(),
+            child: const ResetPasswordScreen(),
+          ),
+        );
+
+        
       // 2. الشاشة الرئيسية والمنتجات (Home)
       case Routes.homeScreen:
         return MaterialPageRoute(
@@ -63,24 +115,26 @@ class AppRouter {
         );
 
       // 4. شاشة تصفح الأقسام (Catalog)
-      case Routes.catalogScreen:
+     case Routes.catalogScreen:
+        final categoryId = settings.arguments?.toString();
         return MaterialPageRoute(
+          settings: settings, // 👈 هذه ضرورية جداً لكي لا تضيع البيانات في الطريق
           builder: (_) => ChangeNotifierProvider(
             create: (_) => getIt<CatalogProvider>(),
-            child: const CatalogScreen(),
+            child: CatalogScreen(initialCategoryId: categoryId), // 👈 نمرر المعرف مباشرة للشاشة
           ),
         );
 
       // 5. شاشة السلة (Cart)
       case Routes.cartScreen:
-        final userId = settings.arguments as int? ?? 1;
+        final userId = settings.arguments as String? ?? '';
         return MaterialPageRoute(
           builder: (_) => CartScreen(userId: userId),
         );
 
       // 6. شاشة إتمام الطلب والدفع (Checkout)
       case Routes.checkoutScreen:
-        final userId = settings.arguments as int? ?? 1;
+        final userId = settings.arguments as String? ?? '';
         return MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
             create: (_) => getIt<OrdersProvider>(),
@@ -89,16 +143,25 @@ class AppRouter {
         );
 
       // 7. شاشة نجاح الطلب (Order Success)
-      case Routes.orderSuccessScreen:
-        final order = settings.arguments as OrderEntity?;
-        return MaterialPageRoute(
-          builder: (_) => OrderSuccessScreen(order: order),
-        );
+    // 7. شاشة نجاح الطلب (Order Success)
+case Routes.orderSuccessScreen:
+  // 1. استقبال الـ arguments المرسلة من الـ CheckoutScreen
+  final orderArg = settings.arguments as OrderEntity?; 
 
+  return MaterialPageRoute(
+    settings: settings,
+    builder: (_) => ChangeNotifierProvider(
+      create: (_) => getIt<OrdersProvider>(),
+      // 2. تمرير الـ order للـ Screen هنا بشكل صريح
+      child: OrderSuccessScreen(order: orderArg), 
+    ),
+  );
       // 8. شاشة سجل الطلبات السابقة (Orders History)
       case Routes.ordersHistoryScreen:
-        final userId = settings.arguments as int? ?? 1;
+        final userId = settings.arguments as String? ?? '';
+        debugPrint('--- User ID being sent to history is: "$userId" ---');
         return MaterialPageRoute(
+          settings: settings, 
           builder: (_) => ChangeNotifierProvider(
             create: (_) => getIt<OrdersProvider>(),
             child: OrdersHistoryScreen(userId: userId),
@@ -122,4 +185,6 @@ class AppRouter {
         );
     }
   }
+
+    
 }

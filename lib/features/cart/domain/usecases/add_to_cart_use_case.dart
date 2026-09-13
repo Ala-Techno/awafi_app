@@ -8,8 +8,8 @@ class AddToCartUseCase {
   const AddToCartUseCase(this.repository);
 
   Future<ApiResult<List<CartItemEntity>>> call({
-    required int userId,
-    required int productId,
+    required String userId,
+    required String productId,
     required int quantity,
   }) {
     return repository.addToCart(userId, productId, quantity);

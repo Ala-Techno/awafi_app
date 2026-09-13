@@ -8,11 +8,11 @@ class LoginUseCase {
   const LoginUseCase(this.repository);
 
   Future<ApiResult<UserEntity>> call({
-    required String username,
+    required String email,
     required String password,
   }) {
     return repository.login(
-      username: username,
+      email: email,
       password: password,
     );
   }

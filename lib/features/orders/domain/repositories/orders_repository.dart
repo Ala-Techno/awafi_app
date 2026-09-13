@@ -4,12 +4,12 @@ import '../entities/order_entity.dart';
 
 abstract class OrdersRepository {
   Future<ApiResult<OrderEntity>> placeOrder({
-    required int userId,
+    required String userId,
     required List<CartItemEntity> items,
     required double totalAmount,
-    required String paymentMethod,
-    required String shippingAddress,
+    String? paymentMethod,
+    String? shippingAddress,
   });
 
-  Future<ApiResult<List<OrderEntity>>> getOrderHistory(int userId);
+  Future<ApiResult<List<OrderEntity>>> getOrderHistory(String userId);
 }

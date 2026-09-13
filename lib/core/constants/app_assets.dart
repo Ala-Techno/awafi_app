@@ -11,6 +11,9 @@ abstract class AppAssets {
   static const String appLogo = '$_imagesPath/app_logo.png';
   static const String onboardingHeader = '$_imagesPath/onboarding_header.png';
   static const String placeholder = '$_imagesPath/placeholder.png';
+  static const String banner = '$_imagesPath/banner_offers.jpg';
+  static const String banner2 = '$_imagesPath/banner_offers_2.jpg';
+  
 
   // ── Icons / SVGs (إن وجدت) ────────────────────────────────────────────────
   // static const String icGoogle = '$_svgsPath/ic_google.svg';

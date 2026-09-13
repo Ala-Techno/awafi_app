@@ -45,3 +45,11 @@ app.*.map.json
 /android/app/release
 # Widget Preview related
 .widget_preview/
+
+# Firebase sensitive configuration files (Best Practice)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Accidental non-flutter files & archives
+node_modules/
+package-lock.json

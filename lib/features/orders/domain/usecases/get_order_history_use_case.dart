@@ -7,7 +7,7 @@ class GetOrderHistoryUseCase {
 
   const GetOrderHistoryUseCase(this.repository);
 
-  Future<ApiResult<List<OrderEntity>>> call(int userId) {
+  Future<ApiResult<List<OrderEntity>>> call(String userId) {
     return repository.getOrderHistory(userId);
   }
 }

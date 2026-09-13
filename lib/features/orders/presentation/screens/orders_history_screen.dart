@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/orders_provider.dart';
 
 class OrdersHistoryScreen extends StatefulWidget {
-  final int userId;
+  final String userId;
 
-  const OrdersHistoryScreen({super.key, this.userId = 1});
+  const OrdersHistoryScreen({super.key, required this.userId});
 
   @override
   State<OrdersHistoryScreen> createState() => _OrdersHistoryScreenState();
@@ -73,7 +73,8 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
               final order = provider.orders[index];
               return Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -82,19 +83,27 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'طلب #${order.id}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          Flexible(
+                            child: Text(
+                              'طلب #${order.id.substring(0, 8)}...',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.green.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
                               'مكتمل',
-                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12),
                             ),
                           ),
                         ],
@@ -102,18 +111,20 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'التاريخ: ${order.date}',
-                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       const Divider(height: 20),
                       Text(
-                        'عدد العناصر: ${order.products.length}',
+                        'عدد العناصر: ${order.items.length}',
                         style: const TextStyle(fontSize: 14),
                       ),
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('المبلغ الإجمالي:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('المبلغ الإجمالي:',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           Text(
                             '\$${order.totalAmount.toStringAsFixed(2)}',
                             style: const TextStyle(

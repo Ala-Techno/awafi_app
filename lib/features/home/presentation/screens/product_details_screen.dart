@@ -1,4 +1,5 @@
 import 'package:awafi_app/features/cart/presentation/providers/cart_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/product_entity.dart';
@@ -37,7 +38,7 @@ class ProductDetailsScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.network(
-                    product.image,
+                    product.imageUrl,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.broken_image, size: 80),
@@ -108,10 +109,12 @@ class ProductDetailsScreen extends StatelessWidget {
               onPressed: cartController.isLoading
                   ? null
                   : ()async {
+                      final currentUserId =
+                          FirebaseAuth.instance.currentUser?.uid ?? '';
                       final isSuccess = await cartController.addToCart(
-                        userId: 1, 
-                        product: product, 
-                        quantity: 1, 
+                        userId: currentUserId,
+                        product: product,
+                        quantity: 1,
                       );
                       if (!context.mounted) return;
 

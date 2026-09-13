@@ -51,25 +51,26 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    Routes.homeScreen,
-                    (route) => false,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                ),
-                child: const Text('العودة للرئيسية', style: TextStyle(fontSize: 16)),
-              ),
-              const SizedBox(height: 12),
+             ElevatedButton(
+  onPressed: () {
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      Routes.mainNavigationScreen, // ✅ الحل: العودة للشاشة الرئيسية التي تحتوي على الـ Bottom Nav والـ Buttons
+      (route) => false,
+    );
+  },
+  style: ElevatedButton.styleFrom(
+    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+  ),
+  child: const Text('العودة للرئيسية', style: TextStyle(fontSize: 16)),
+), const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
+                  final userId = order?.userId ?? '';
                   Navigator.pushReplacementNamed(
                     context,
                     Routes.ordersHistoryScreen,
+                    arguments: userId 
                   );
                 },
                 child: const Text('عرض سجل الطلبات'),
